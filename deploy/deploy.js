@@ -22,7 +22,7 @@ module.exports = async (hardhat) => {
   }
 
   dim(`Deployer is ${deployer}`)
-  const isTestNet = await getChainId() == 1 ? false : true
+  const isTestNet = await getChainId() == 56 ? false : true
   dim(`Is TestNet? ${isTestNet}`)
 
   // constants 
@@ -86,14 +86,16 @@ module.exports = async (hardhat) => {
   
   const poolToken = await ethers.getContractAt('Pool', poolTokenResult.address, deployerSigner)
 
-  // set POOL minter to timelock
-  if(await poolToken.minter() != timelockResult.address){
+  // set POOL minter to timelock if not on testnet
+  if(!isTestNet && await poolToken.minter() != timelockResult.address){
     dim(`Setting timelock as POOL minter`)
     await poolToken.setMinter(timelockResult.address)
     green(`set POOL minter as ${timelockResult.address}`)
   }
   
   // deploy employee Treasury contracts
+  dim(`No treasury contracts yet`)
+  /*
   for(const entity in allReceivingEntities) {
     let entityAddress = namedAccounts[entity]
     if(entity == 'Treasury'){
@@ -123,7 +125,7 @@ module.exports = async (hardhat) => {
     green(`Deployed TreasuryVesting for ${entity} at contract: ${treasuryResult.address}`)
   }
 
-
+*/
     
   green(`Done!`)
 };
