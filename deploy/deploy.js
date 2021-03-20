@@ -34,30 +34,31 @@ module.exports = async (hardhat) => {
   const allReceivingEntities = {
     MultiSig: {
       amount: "1000000",
-      cliff: oneMonthInSeconds,
-      end: oneYearInSeconds
+      cliff: isTestNet ? 1 : oneMonthInSeconds,
+      end: isTestNet ? 15*60 : oneYearInSeconds
     },
     MultiSigShort: {
       amount: "600000",
-      cliff: oneMonthInSeconds,
-      end: oneMonthInSeconds + onedayInSeconds
+      cliff: isTestNet ? 1 : oneMonthInSeconds,
+      end: isTestNet ? 15*60 :  oneMonthInSeconds + onedayInSeconds
     }
   }
-
+  const recentBlock = await ethers.provider.getBlock()
+  dim(`got recent block timestamp: ${recentBlock.timestamp}`)
   MintingAllowedAfterInSeconds = isTestNet ? 15*60 : oneHundredDaysInSeconds
 
-  // deploy Pool token
-  dim(`deploying POOL token`)
+  // deploy Poo token
+  dim(`deploying Poo token`)
   const poolTokenResult = await deploy('Pool', {
     args: [
       MultiSig, 
       deployer, // minter
-      MintingAllowedAfterInSeconds
+      recentBlock.timestamp + MintingAllowedAfterInSeconds
     ],
     from: deployer,
     skipIfAlreadyDeployed: true
   })
-  green(`Deployed PoolToken token: ${poolTokenResult.address}`)
+  green(`Deployed PooToken token: ${poolTokenResult.address}`)
 
   
   // deploy GovernorAlpha
@@ -102,9 +103,9 @@ module.exports = async (hardhat) => {
 
   // set POOL minter to timelock if not on testnet
   if(!isTestNet && await poolToken.minter() != timelockResult.address){
-    dim(`Setting timelock as POOL minter`)
+    dim(`Setting timelock as POO minter`)
     await poolToken.setMinter(timelockResult.address)
-    green(`set POOL minter as ${timelockResult.address}`)
+    green(`set POO minter as ${timelockResult.address}`)
   }
   
   // deploy employee Treasury contracts
@@ -140,7 +141,7 @@ module.exports = async (hardhat) => {
     })
     green(`Deployed TreasuryVesting for ${entity} at contract: ${treasuryResult.address}`)
     // Transfer Amount to treasury
-    await poolTokenResult.transfer(treasuryResult.address, vestingAmount)
+    await poolToken.transfer(treasuryResult.address, vestingAmount)
     green(`Transfered ${vestingAmount} for ${entity} with cliff set to ${vestingCliff}s and ${vestingEnd}s: ${treasuryResult.address}`)
   }
     
