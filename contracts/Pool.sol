@@ -24,10 +24,10 @@ contract Pool {
     uint public mintingAllowedAfter;
 
     /// @notice Minimum time between mints
-    uint32 public constant minimumTimeBetweenMints = 365 days; //1 year
+    uint32 public constant minimumTimeBetweenMints = 100 days; //1 year
 
     /// @notice Cap on the percentage of totalSupply that can be minted at each mint
-    uint8 public constant mintCap = 2;
+    uint8 public constant mintCap = 100;
 
     /// @notice Allowance amounts on behalf of others
     mapping (address => mapping (address => uint96)) internal allowances;
