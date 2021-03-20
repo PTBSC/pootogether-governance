@@ -30,6 +30,9 @@ module.exports = async (hardhat) => {
   const fourYearsAfterDeployStartInSeconds = vestingStartTimeInSeconds + (4 * oneYearInSeconds)
   const twoDaysInSeconds = 172810
   const oneHundredDaysInSeconds = 8640000 // 100 * 24 * 3600
+
+  const onboardingAndEducationAmount = 250000
+  const communityTreasury = 2650000
   
   const allReceivingEntities = {
     MultiSig: {
@@ -107,10 +110,15 @@ module.exports = async (hardhat) => {
     await poolToken.setMinter(timelockResult.address)
     green(`set POO minter as ${timelockResult.address}`)
   }
-  
-  // deploy employee Treasury contracts
-  dim(`No treasury contracts yet`)
 
+  
+  let tx = await poolToken.transfer(MultiSig, onboardingAndEducationAmount)
+  green(`Transfered ${onboardingAndEducationAmount} for onboarding and education to ${MultiSig} => ${tx.hash}`)
+
+  await poolToken.transfer(MultiSig, communityTreasury)
+  green(`Transfered ${communityTreasury} for onboarding and education to: ${MultiSig} => ${tx.hash}`)
+
+  // deploy employee Treasury contracts
   for(const entity in allReceivingEntities) {
     let entityAddress = namedAccounts[entity]
     if(entity == 'Treasury'){
