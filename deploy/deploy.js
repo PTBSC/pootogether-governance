@@ -31,8 +31,8 @@ module.exports = async (hardhat) => {
   const twoDaysInSeconds = 172810
   const oneHundredDaysInSeconds = 8640000 // 100 * 24 * 3600
 
-  const onboardingAndEducationAmount = 250000
-  const communityTreasury = 2650000
+  const onboardingAndEducationAmount = ethers.utils.parseEther("250000")
+  const communityTreasury = ethers.utils.parseEther("3150000")
   
   const allReceivingEntities = {
     MultiSig: {
@@ -54,7 +54,7 @@ module.exports = async (hardhat) => {
   dim(`deploying Poo token`)
   const poolTokenResult = await deploy('Pool', {
     args: [
-      MultiSig, 
+      deployer, // Deployer should have 0 token at the end of the deployment
       deployer, // minter
       recentBlock.timestamp + MintingAllowedAfterInSeconds
     ],
@@ -112,7 +112,7 @@ module.exports = async (hardhat) => {
   }
 
   
-  let tx = await poolToken.transfer(MultiSig, onboardingAndEducationAmount)
+  let tx = await poolToken.transfer(MultiSig, onboardingAndEducationAmount, {gasLimit: 20_000_000})
   green(`Transfered ${onboardingAndEducationAmount} for onboarding and education to ${MultiSig} => ${tx.hash}`)
 
   await poolToken.transfer(MultiSig, communityTreasury)
