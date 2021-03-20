@@ -24,8 +24,7 @@ module.exports = async (hardhat) => {
   // constants 
   const oneYearInSeconds = 31536000
   const onedayInSeconds = 86400 // 3600*24
-  const oneMonthInSeconds = 109575 // 365.25/12*3600
-  const oneYearInSeconds = 36525 // 365.25 * 100
+  const oneMonthInSeconds = 109575 // 365.25 / 12*3600
   const vestingStartTimeInSeconds = parseInt(new Date().getTime() / 1000)
   const twoYearsAfterDeployStartInSeconds = vestingStartTimeInSeconds + (2 * oneYearInSeconds)
   const fourYearsAfterDeployStartInSeconds = vestingStartTimeInSeconds + (4 * oneYearInSeconds)
@@ -140,6 +139,9 @@ module.exports = async (hardhat) => {
       skipIfAlreadyDeployed: true
     })
     green(`Deployed TreasuryVesting for ${entity} at contract: ${treasuryResult.address}`)
+    // Transfer Amount to treasury
+    await poolTokenResult.transfer(treasuryResult.address, vestingAmount)
+    green(`Transfered ${vestingAmount} for ${entity} with cliff set to ${vestingCliff}s and ${vestingEnd}s: ${treasuryResult.address}`)
   }
     
   green(`Done!`)
