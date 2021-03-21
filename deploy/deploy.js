@@ -63,7 +63,9 @@ module.exports = async (hardhat) => {
   })
   green(`Deployed PooToken token: ${poolTokenResult.address}`)
 
-  
+  const poolToken = await ethers.getContractAt('Pool', poolTokenResult.address, deployerSigner)
+
+/* 
   // deploy GovernorAlpha
   dim(`deploying GovernorAlpha`)
   const governanceContract = isTestNet? 'GovernorZero' : "GovernorAlpha"
@@ -101,9 +103,6 @@ module.exports = async (hardhat) => {
     green(`Governor Timelock set to ${timelockResult.address}`)
   }
 
-  
-  const poolToken = await ethers.getContractAt('Pool', poolTokenResult.address, deployerSigner)
-
   // set POOL minter to timelock if not on testnet
   if(!isTestNet && await poolToken.minter() != timelockResult.address){
     dim(`Setting timelock as POO minter`)
@@ -111,11 +110,12 @@ module.exports = async (hardhat) => {
     green(`set POO minter as ${timelockResult.address}`)
   }
 
+*/
   
   let tx = await poolToken.transfer(MultiSig, onboardingAndEducationAmount, {gasLimit: 20_000_000})
   green(`Transfered ${onboardingAndEducationAmount} for onboarding and education to ${MultiSig} => ${tx.hash}`)
 
-  await poolToken.transfer(MultiSig, communityTreasury)
+  tx = await poolToken.transfer(MultiSig, communityTreasury)
   green(`Transfered ${communityTreasury} for onboarding and education to: ${MultiSig} => ${tx.hash}`)
 
   // deploy employee Treasury contracts

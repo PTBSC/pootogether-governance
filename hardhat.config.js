@@ -30,12 +30,12 @@ module.exports = {
     },
     MultiSig: {
       default : 0,
-      56: "", // BSC mainnet
+      56: "0xbFb05ad7A12A646938d15bFaC9B22054E2cb2F89", // BSC mainnet
       97: "0x77745e5ac1b80c84021b4ef80a33dfc0a69249d2"  // BSC testnet
     },
     MultiSigShort: {
       default : 0,
-      56: "", // BSC mainnet
+      56: "0xbFb05ad7A12A646938d15bFaC9B22054E2cb2F89", // BSC mainnet
       97: "0x77745e5ac1b80c84021b4ef80a33dfc0a69249d2"  // BSC testnet
     }
     
