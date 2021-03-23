@@ -24,43 +24,48 @@ module.exports = async (hardhat) => {
   // constants 
   const oneYearInSeconds = 31536000
   const onedayInSeconds = 86400 // 3600*24
-  const oneMonthInSeconds = 109575 // 365.25/12*3600
-  const oneYearInSeconds = 36525 // 365.25 * 100
+  const oneMonthInSeconds = 109575 // 365.25 / 12*3600
   const vestingStartTimeInSeconds = parseInt(new Date().getTime() / 1000)
   const twoYearsAfterDeployStartInSeconds = vestingStartTimeInSeconds + (2 * oneYearInSeconds)
   const fourYearsAfterDeployStartInSeconds = vestingStartTimeInSeconds + (4 * oneYearInSeconds)
   const twoDaysInSeconds = 172810
   const oneHundredDaysInSeconds = 8640000 // 100 * 24 * 3600
+
+  const onboardingAndEducationAmount = ethers.utils.parseEther("250000")
+  const communityTreasury = ethers.utils.parseEther("3150000")
   
   const allReceivingEntities = {
     MultiSig: {
       amount: "1000000",
-      cliff: oneMonthInSeconds,
-      end: oneYearInSeconds
+      cliff: isTestNet ? 1 : oneMonthInSeconds,
+      end: isTestNet ? 15*60 : oneYearInSeconds
     },
     MultiSigShort: {
       amount: "600000",
-      cliff: oneMonthInSeconds,
-      end: oneMonthInSeconds + onedayInSeconds
+      cliff: isTestNet ? 1 : oneMonthInSeconds,
+      end: isTestNet ? 15*60 :  oneMonthInSeconds + onedayInSeconds
     }
   }
-
+  const recentBlock = await ethers.provider.getBlock()
+  dim(`got recent block timestamp: ${recentBlock.timestamp}`)
   MintingAllowedAfterInSeconds = isTestNet ? 15*60 : oneHundredDaysInSeconds
 
-  // deploy Pool token
-  dim(`deploying POOL token`)
+  // deploy Poo token
+  dim(`deploying Poo token`)
   const poolTokenResult = await deploy('Pool', {
     args: [
-      MultiSig, 
+      deployer, // Deployer should have 0 token at the end of the deployment
       deployer, // minter
-      MintingAllowedAfterInSeconds
+      recentBlock.timestamp + MintingAllowedAfterInSeconds
     ],
     from: deployer,
     skipIfAlreadyDeployed: true
   })
-  green(`Deployed PoolToken token: ${poolTokenResult.address}`)
+  green(`Deployed PooToken token: ${poolTokenResult.address}`)
 
-  
+  const poolToken = await ethers.getContractAt('Pool', poolTokenResult.address, deployerSigner)
+
+/* 
   // deploy GovernorAlpha
   dim(`deploying GovernorAlpha`)
   const governanceContract = isTestNet? 'GovernorZero' : "GovernorAlpha"
@@ -98,19 +103,22 @@ module.exports = async (hardhat) => {
     green(`Governor Timelock set to ${timelockResult.address}`)
   }
 
-  
-  const poolToken = await ethers.getContractAt('Pool', poolTokenResult.address, deployerSigner)
-
   // set POOL minter to timelock if not on testnet
   if(!isTestNet && await poolToken.minter() != timelockResult.address){
-    dim(`Setting timelock as POOL minter`)
+    dim(`Setting timelock as POO minter`)
     await poolToken.setMinter(timelockResult.address)
-    green(`set POOL minter as ${timelockResult.address}`)
+    green(`set POO minter as ${timelockResult.address}`)
   }
-  
-  // deploy employee Treasury contracts
-  dim(`No treasury contracts yet`)
 
+*/
+  
+  let tx = await poolToken.transfer(MultiSig, onboardingAndEducationAmount, {gasLimit: 20_000_000})
+  green(`Transfered ${onboardingAndEducationAmount} for onboarding and education to ${MultiSig} => ${tx.hash}`)
+
+  tx = await poolToken.transfer(MultiSig, communityTreasury)
+  green(`Transfered ${communityTreasury} for onboarding and education to: ${MultiSig} => ${tx.hash}`)
+
+  // deploy employee Treasury contracts
   for(const entity in allReceivingEntities) {
     let entityAddress = namedAccounts[entity]
     if(entity == 'Treasury'){
@@ -140,6 +148,9 @@ module.exports = async (hardhat) => {
       skipIfAlreadyDeployed: true
     })
     green(`Deployed TreasuryVesting for ${entity} at contract: ${treasuryResult.address}`)
+    // Transfer Amount to treasury
+    await poolToken.transfer(treasuryResult.address, vestingAmount)
+    green(`Transfered ${vestingAmount} for ${entity} with cliff set to ${vestingCliff}s and ${vestingEnd}s: ${treasuryResult.address}`)
   }
     
   green(`Done!`)

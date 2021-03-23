@@ -1,9 +1,17 @@
 const networks = {}
 
+networks.BSC = {
+  saveDeployments: true,
+  url: 'https://bsc-dataseed.binance.org/',
+    accounts: {
+      mnemonic: process.env.HDWALLET_MNEMONIC
+    }
+}
+
 networks.BSC_TESTNET = {
   saveDeployments: true,
   url: 'https://data-seed-prebsc-2-s1.binance.org:8545/',
-  accounts: ["841fce200a773711e9ccaa100303c22ce2d637f3f02b068deb248a7d1f777160"]
+  accounts: ["841fce200a773711e9ccaa100303c22ce2d637f3f02b068deb248a7d1f777160"] //TODO change to HDWALLET_MNEMONIC environment variable
 }
 
 if (process.env.INFURA_API_KEY && process.env.HDWALLET_MNEMONIC) {

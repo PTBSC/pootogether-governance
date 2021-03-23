@@ -20,13 +20,14 @@
     "chalk": "^4.1.0",
     "ethereum-waffle": "^3.0.0",
     "ethers": "^5.0.0",
-    "hardhat": "^2.0.7",
+    "hardhat": "^2.1.1",
     "hardhat-abi-exporter": "^2.0.8",
     "hardhat-deploy": "^0.7.0-beta.39",
     "hardhat-deploy-ethers": "^0.3.0-beta.7"
   },
   "dependencies": {
     "@nomiclabs/buidler": "^1.4.8",
+    "@nomiclabs/hardhat-etherscan": "^2.1.1",
     "chai": "^4.2.0"
   },
   "files": [
